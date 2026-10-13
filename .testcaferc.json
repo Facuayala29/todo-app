@@ -1,0 +1,6 @@
+{
+  "browsers": ["chrome:headless"],
+  "src": ["tests/*.e2e.ts"],
+  "appCommand": "vite --port 5174 --strictPort",
+  "appInitDelay": 3000
+}
