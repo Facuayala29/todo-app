@@ -2,7 +2,8 @@ import { describe, it, expect } from 'vitest'
 import {
   type Todo,
   createTodo,
-  removeTodoById
+  removeTodoById,
+  updateTodoText
 } from './todos'
 
 
@@ -35,5 +36,20 @@ describe('removeTodoById', () => {
     removeTodoById(todos, 2)
 
     expect(todos).toHaveLength(3)
+  })
+})
+
+
+describe('updateTodoText', () => {
+  it('changes the text of the todo', () => {
+    const result = updateTodoText(todos, 1, 'Buy oat milk')
+
+    expect(result[0].text).toBe('Buy oat milk')
+  })
+
+  it('keeps the old text if the new one is empty', () => {
+    const result = updateTodoText(todos, 1, '   ')
+
+    expect(result[0].text).toBe('Buy milk')
   })
 })
