@@ -83,7 +83,8 @@ button:active {
   outline: none;
   transition: box-shadow 0.2s;
 }
-.todo-form input:focus {
+.todo-form input:focus,
+.edit-input:focus {
   box-shadow: 0 0 0 4px rgba(0, 122, 255, 0.25);
 }
 .todo-form button {
@@ -127,4 +128,30 @@ button:active {
 .remove-button {
   background: rgba(255, 59, 48, 0.12);
   color: var(--red);
+}
+.edit-button {
+  background: rgba(0, 122, 255, 0.12);
+  color: var(--blue);
+}
+
+.edit-input {
+  flex: 1;
+  min-width: 0;
+  padding: 6px 12px;
+  font-family: inherit;
+  font-size: 17px;
+  color: var(--text-color);
+  background: var(--fill-color);
+  border: none;
+  border-radius: 10px;
+  outline: none;
+  transition: box-shadow 0.2s;
+}
+.save-button {
+  background: var(--blue);
+  color: #fff;
+}
+.cancel-button {
+  background: var(--fill-color);
+  color: var(--text-secondary-color);
 }

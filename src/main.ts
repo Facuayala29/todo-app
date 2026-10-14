@@ -2,10 +2,13 @@ import './style.css'
 import {
   type Todo,
   createTodo,
-  removeTodoById
+  removeTodoById,
+  updateTodoText
 } from './todos'
 
 let todos: Todo[] = [];
+
+let editingId = 0; // id of the todo that is being edited, 0 when there is none
 
 const todoInput = document.getElementById('todo-input') as HTMLInputElement;
 const todoForm = document.querySelector('.todo-form') as HTMLFormElement;
@@ -24,13 +27,30 @@ const renderTodos = ():void => {
   todos.forEach(todo => {
     const li = document.createElement('li');
     li.className = 'todo-item'
-    li.innerHTML = `
-      <span>${todo.text}</span>
-      <button class="remove-button">Remove</button>
-    `
-    addRemoveButtonListener(li, todo.id);
+
+    if (todo.id === editingId) {
+      // this todo is being edited, show an input instead of the text
+      li.innerHTML = `
+        <input type="text" class="edit-input">
+        <button class="save-button">Save</button>
+        <button class="cancel-button">Cancel</button>
+      `
+      addEditFormListeners(li, todo);
+    } else {
+      li.innerHTML = `
+        <span>${todo.text}</span>
+        <button class="remove-button">Remove</button>
+        <button class="edit-button">Edit</button>
+      `
+      addRemoveButtonListener(li, todo.id);
+      addEditButtonListener(li, todo.id);
+    }
     todoList.appendChild(li);
   })
+
+  // put the cursor in the edit input so the user can type right away
+  const editInput = todoList.querySelector('.edit-input') as HTMLInputElement | null;
+  editInput?.focus()
 }
 
 todoForm.addEventListener('submit', (event: Event) => {
@@ -57,6 +77,48 @@ const addRemoveButtonListener = (li:HTMLLIElement, id:number):void => {
 
 const removeTodo = (id:number):void => {
   todos = removeTodoById(todos, id)
+  renderTodos();
+}
+
+
+const addEditButtonListener = (li:HTMLLIElement, id:number):void => {
+  const editButton = li.querySelector('.edit-button');
+  editButton?.addEventListener('click', () => editTodo(id))
+}
+
+const editTodo = (id:number):void => {
+  editingId = id
+  renderTodos();
+}
+
+const addEditFormListeners = (li:HTMLLIElement, todo:Todo):void => {
+  const editInput = li.querySelector('.edit-input') as HTMLInputElement;
+  const saveButton = li.querySelector('.save-button');
+  const cancelButton = li.querySelector('.cancel-button');
+  editInput.value = todo.text
+
+  saveButton?.addEventListener('click', () => saveEdit(todo.id, editInput.value))
+  cancelButton?.addEventListener('click', () => cancelEdit())
+
+  // enter saves and escape cancels, same as the buttons
+  editInput.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      saveEdit(todo.id, editInput.value);
+    }
+    if (event.key === 'Escape') {
+      cancelEdit();
+    }
+  })
+}
+
+const saveEdit = (id:number, text:string):void => {
+  todos = updateTodoText(todos, id, text)
+  editingId = 0
+  renderTodos();
+}
+
+const cancelEdit = ():void => {
+  editingId = 0
   renderTodos();
 }
 
