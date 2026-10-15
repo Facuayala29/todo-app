@@ -5,11 +5,15 @@ import {
   removeTodoById,
   toggleTodoById,
   updateTodoText,
+  filterTodos,
+  clearCompleted,
   getProgressText
 } from './todos'
 
 let todos: Todo[] = [];
 
+// used by the filter and the edit
+let currentFilter = 'all';
 let editingId = 0; // id of the todo that is being edited, 0 when there is none
 
 const todoInput = document.getElementById('todo-input') as HTMLInputElement;
@@ -18,6 +22,9 @@ const todoList = document.getElementById('todo-list') as HTMLUListElement;
 const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
 const progressBar = document.getElementById('progress-bar') as HTMLProgressElement;
 const progressText = document.getElementById('progress-text') as HTMLParagraphElement;
+const filterButtons = document.querySelectorAll('.filter-button');
+const clearCompletedButton = document.getElementById('clear-completed-button') as HTMLButtonElement;
+const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
 
 const addTodo = (text:string):void => {
   todos.push(createTodo(text))
@@ -28,7 +35,7 @@ const renderTodos = ():void => {
   // clear the list so the todos are not repeated
   todoList.innerHTML = '';
 
-  todos.forEach(todo => {
+  filterTodos(todos, currentFilter).forEach(todo => {
     const li = document.createElement('li');
     li.className = 'todo-item'
     if (todo.completed) {
@@ -78,6 +85,30 @@ todoForm.addEventListener('submit', (event: Event) => {
     todoInput.classList.add('input-error')
     errorMessage.style.display = 'block'
   }
+})
+
+
+clearButton.addEventListener('click', () => {
+  todos = []
+  renderTodos();
+})
+
+clearCompletedButton.addEventListener('click', () => {
+  todos = clearCompleted(todos)
+  renderTodos();
+})
+
+
+// Filter - shows all, active or completed todos
+filterButtons.forEach(filterButton => {
+  filterButton.addEventListener('click', () => {
+    currentFilter = filterButton.getAttribute('data-filter') || 'all'
+
+    // only the clicked button stays marked as active
+    filterButtons.forEach(button => button.classList.remove('active'))
+    filterButton.classList.add('active')
+    renderTodos();
+  })
 })
 
 

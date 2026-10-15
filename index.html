@@ -21,9 +21,22 @@
       <progress id="progress-bar" value="0" max="1"></progress>
       <p id="progress-text"></p>
 
+      <div class="filters">
+        <button class="filter-button active" data-filter="all">All</button>
+        <button class="filter-button" data-filter="active">Active</button>
+        <button class="filter-button" data-filter="completed">Completed</button>
+      </div>
+
       <ul id="todo-list">
 
       </ul>
+
+      <div class="footer">
+        <div class="footer-buttons">
+          <button id="clear-completed-button">Clear completed</button>
+          <button id="clear-button">Clear all</button>
+        </div>
+      </div>
     </div>
     <script type="module" src="/src/main.ts"></script>
   </body>

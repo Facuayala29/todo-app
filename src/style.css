@@ -133,6 +133,26 @@ button:active {
 }
 
 
+.filters {
+  display: flex;
+  margin-top: 16px;
+  padding: 2px;
+  background: var(--fill-color);
+  border-radius: 9px;
+}
+.filter-button {
+  flex: 1;
+  padding: 6px 0;
+  font-size: 13px;
+  color: var(--text-color);
+  background: none;
+  border-radius: 7px;
+}
+.filter-button.active {
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+}
+
 #todo-list {
   list-style: none;
   margin: 12px 0 0;
@@ -189,7 +209,6 @@ button:active {
   color: var(--text-secondary-color);
 }
 
-
 .toggle-checkbox {
   appearance: none;
   flex-shrink: 0;
@@ -204,4 +223,22 @@ button:active {
 .toggle-checkbox:checked {
   border-color: var(--blue);
   background: var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.5 3.5L16 8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
+}
+
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-top: 20px;
+}
+.footer-buttons {
+  display: flex;
+  gap: 8px;
+}
+#clear-completed-button,
+#clear-button {
+  padding: 6px 14px;
+  background: var(--fill-color);
+  color: var(--text-secondary-color);
 }

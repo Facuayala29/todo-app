@@ -51,6 +51,21 @@ export const updateTodoText = (todos:Todo[], id:number, text:string):Todo[] => {
   })
 }
 
+// filter can be 'all', 'active' or 'completed'
+export const filterTodos = (todos:Todo[], filter:string):Todo[] => {
+  if (filter === 'active') {
+    return todos.filter(todo => !todo.completed)
+  }
+  if (filter === 'completed') {
+    return todos.filter(todo => todo.completed)
+  }
+  return todos
+}
+
+export const clearCompleted = (todos:Todo[]):Todo[] => {
+  return todos.filter(todo => !todo.completed)
+}
+
 // gives a text like "2 of 5 done"
 export const getProgressText = (todos:Todo[]):string => {
   const completed = todos.filter(todo => todo.completed).length
