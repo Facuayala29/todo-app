@@ -5,6 +5,8 @@ import {
   removeTodoById,
   toggleTodoById,
   updateTodoText,
+  filterTodos,
+  clearCompleted,
   getProgressText
 } from './todos'
 
@@ -68,6 +70,28 @@ describe('updateTodoText', () => {
     const result = updateTodoText(todos, 1, '   ')
 
     expect(result[0].text).toBe('Buy milk')
+  })
+})
+
+
+describe('filterTodos', () => {
+  it('shows all the todos', () => {
+    expect(filterTodos(todos, 'all')).toHaveLength(3)
+  })
+
+  it('shows only the active todos', () => {
+    expect(filterTodos(todos, 'active').map(todo => todo.id)).toEqual([1, 3])
+  })
+
+  it('shows only the completed todos', () => {
+    expect(filterTodos(todos, 'completed').map(todo => todo.id)).toEqual([2])
+  })
+})
+
+
+describe('clearCompleted', () => {
+  it('removes the completed todos and keeps the active ones', () => {
+    expect(clearCompleted(todos).map(todo => todo.id)).toEqual([1, 3])
   })
 })
 
