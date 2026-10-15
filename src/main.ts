@@ -10,7 +10,8 @@ import {
   getProgressText
 } from './todos'
 
-let todos: Todo[] = [];
+// get the todos saved in the browser, or start with an empty list
+let todos: Todo[] = JSON.parse(localStorage.getItem('todos') || '[]');
 
 // used by the filter and the edit
 let currentFilter = 'all';
@@ -69,6 +70,7 @@ const renderTodos = ():void => {
   editInput?.focus()
 
   updateProgress();
+  saveTodos();
 }
 
 todoForm.addEventListener('submit', (event: Event) => {
@@ -87,6 +89,11 @@ todoForm.addEventListener('submit', (event: Event) => {
   }
 })
 
+
+// saves the todos so they stay after reloading the page
+const saveTodos = ():void => {
+  localStorage.setItem('todos', JSON.stringify(todos))
+}
 
 clearButton.addEventListener('click', () => {
   todos = []
