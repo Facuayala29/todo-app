@@ -3,7 +3,9 @@ import {
   type Todo,
   createTodo,
   removeTodoById,
-  updateTodoText
+  toggleTodoById,
+  updateTodoText,
+  getProgressText
 } from './todos'
 
 
@@ -40,6 +42,21 @@ describe('removeTodoById', () => {
 })
 
 
+describe('toggleTodoById', () => {
+  it('changes an active todo to completed', () => {
+    const result = toggleTodoById(todos, 1)
+
+    expect(result[0].completed).toBe(true)
+  })
+
+  it('changes a completed todo back to active', () => {
+    const result = toggleTodoById(todos, 2)
+
+    expect(result[1].completed).toBe(false)
+  })
+})
+
+
 describe('updateTodoText', () => {
   it('changes the text of the todo', () => {
     const result = updateTodoText(todos, 1, 'Buy oat milk')
@@ -51,5 +68,16 @@ describe('updateTodoText', () => {
     const result = updateTodoText(todos, 1, '   ')
 
     expect(result[0].text).toBe('Buy milk')
+  })
+})
+
+
+describe('getProgressText', () => {
+  it('counts how many todos are done', () => {
+    expect(getProgressText(todos)).toBe('1 of 3 done')
+  })
+
+  it('works with an empty list', () => {
+    expect(getProgressText([])).toBe('0 of 0 done')
   })
 })

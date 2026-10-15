@@ -21,6 +21,19 @@ export const removeTodoById = (todos:Todo[], id:number):Todo[] => {
   return todos.filter(todo => todo.id !== id)
 }
 
+export const toggleTodoById = (todos:Todo[], id:number):Todo[] => {
+  return todos.map(todo => {
+    if (todo.id === id) {
+      return {
+        id: todo.id,
+        text: todo.text,
+        completed: !todo.completed
+      }
+    }
+    return todo
+  })
+}
+
 // if the new text is empty the todo keeps the old one
 export const updateTodoText = (todos:Todo[], id:number, text:string):Todo[] => {
   if (text.trim() === '') {
@@ -36,4 +49,10 @@ export const updateTodoText = (todos:Todo[], id:number, text:string):Todo[] => {
     }
     return todo
   })
+}
+
+// gives a text like "2 of 5 done"
+export const getProgressText = (todos:Todo[]):string => {
+  const completed = todos.filter(todo => todo.completed).length
+  return `${completed} of ${todos.length} done`
 }
