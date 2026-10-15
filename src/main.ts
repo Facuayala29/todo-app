@@ -3,7 +3,9 @@ import {
   type Todo,
   createTodo,
   removeTodoById,
-  updateTodoText
+  toggleTodoById,
+  updateTodoText,
+  getProgressText
 } from './todos'
 
 let todos: Todo[] = [];
@@ -14,6 +16,8 @@ const todoInput = document.getElementById('todo-input') as HTMLInputElement;
 const todoForm = document.querySelector('.todo-form') as HTMLFormElement;
 const todoList = document.getElementById('todo-list') as HTMLUListElement;
 const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
+const progressBar = document.getElementById('progress-bar') as HTMLProgressElement;
+const progressText = document.getElementById('progress-text') as HTMLParagraphElement;
 
 const addTodo = (text:string):void => {
   todos.push(createTodo(text))
@@ -27,6 +31,9 @@ const renderTodos = ():void => {
   todos.forEach(todo => {
     const li = document.createElement('li');
     li.className = 'todo-item'
+    if (todo.completed) {
+      li.classList.add('completed')
+    }
 
     if (todo.id === editingId) {
       // this todo is being edited, show an input instead of the text
@@ -38,10 +45,12 @@ const renderTodos = ():void => {
       addEditFormListeners(li, todo);
     } else {
       li.innerHTML = `
+        <input type="checkbox" class="toggle-checkbox" ${todo.completed ? 'checked' : ''}>
         <span>${todo.text}</span>
         <button class="remove-button">Remove</button>
         <button class="edit-button">Edit</button>
       `
+      addToggleListener(li, todo.id);
       addRemoveButtonListener(li, todo.id);
       addEditButtonListener(li, todo.id);
     }
@@ -51,6 +60,8 @@ const renderTodos = ():void => {
   // put the cursor in the edit input so the user can type right away
   const editInput = todoList.querySelector('.edit-input') as HTMLInputElement | null;
   editInput?.focus()
+
+  updateProgress();
 }
 
 todoForm.addEventListener('submit', (event: Event) => {
@@ -68,6 +79,24 @@ todoForm.addEventListener('submit', (event: Event) => {
     errorMessage.style.display = 'block'
   }
 })
+
+
+const addToggleListener = (li:HTMLLIElement, id:number):void => {
+  const checkbox = li.querySelector('.toggle-checkbox');
+  checkbox?.addEventListener('change', () => toggleTodo(id))
+}
+
+const toggleTodo = (id:number):void => {
+  todos = toggleTodoById(todos, id)
+  renderTodos();
+}
+
+
+const updateProgress = ():void => {
+  progressBar.max = todos.length || 1 // max can not be 0
+  progressBar.value = todos.filter(todo => todo.completed).length
+  progressText.textContent = getProgressText(todos)
+}
 
 
 const addRemoveButtonListener = (li:HTMLLIElement, id:number):void => {

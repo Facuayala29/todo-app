@@ -104,6 +104,35 @@ button:active {
 }
 
 
+#progress-bar {
+  appearance: none;
+  width: 100%;
+  height: 6px;
+  margin-top: 24px;
+  border: none;
+  border-radius: 999px;
+  background: var(--fill-color);
+  overflow: hidden;
+}
+#progress-bar::-webkit-progress-bar {
+  background: var(--fill-color);
+}
+#progress-bar::-webkit-progress-value {
+  background: var(--green);
+  border-radius: 999px;
+  transition: width 0.3s;
+}
+#progress-bar::-moz-progress-bar {
+  background: var(--green);
+  border-radius: 999px;
+}
+#progress-text {
+  margin: 6px 0 0;
+  font-size: 13px;
+  color: var(--text-secondary-color);
+}
+
+
 #todo-list {
   list-style: none;
   margin: 12px 0 0;
@@ -120,6 +149,10 @@ button:active {
   flex: 1;
   font-size: 17px;
   overflow-wrap: anywhere;
+}
+.todo-item.completed span {
+  text-decoration: line-through;
+  color: var(--text-secondary-color);
 }
 .todo-item button {
   padding: 5px 12px;
@@ -154,4 +187,21 @@ button:active {
 .cancel-button {
   background: var(--fill-color);
   color: var(--text-secondary-color);
+}
+
+
+.toggle-checkbox {
+  appearance: none;
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin: 0;
+  border: 1.5px solid #c7c7cc;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+.toggle-checkbox:checked {
+  border-color: var(--blue);
+  background: var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.5 3.5L16 8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
 }
