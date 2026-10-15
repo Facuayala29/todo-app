@@ -20,3 +20,20 @@ export const createTodo = (text:string):Todo => {
 export const removeTodoById = (todos:Todo[], id:number):Todo[] => {
   return todos.filter(todo => todo.id !== id)
 }
+
+// if the new text is empty the todo keeps the old one
+export const updateTodoText = (todos:Todo[], id:number, text:string):Todo[] => {
+  if (text.trim() === '') {
+    return todos
+  }
+  return todos.map(todo => {
+    if (todo.id === id) {
+      return {
+        id: todo.id,
+        text: text.trim(),
+        completed: todo.completed
+      }
+    }
+    return todo
+  })
+}
