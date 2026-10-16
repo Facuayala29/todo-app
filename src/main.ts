@@ -34,6 +34,7 @@ const undoBar = document.getElementById('undo-bar') as HTMLDivElement;
 const undoButton = document.getElementById('undo-button') as HTMLButtonElement;
 const clearCompletedButton = document.getElementById('clear-completed-button') as HTMLButtonElement;
 const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
+const colorPicker = document.getElementById('color-picker') as HTMLInputElement;
 
 const addTodo = (text:string):void => {
   todos.push(createTodo(text))
@@ -238,6 +239,12 @@ const moveTodo = (fromId:number, toId:number):void => {
   todos = moveTodoById(todos, fromId, toId)
   renderTodos();
 }
+
+
+// Color picker - changes the background of the page
+colorPicker.addEventListener('input', () => {
+  document.body.style.backgroundColor = colorPicker.value
+})
 
 
 renderTodos();
