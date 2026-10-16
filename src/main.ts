@@ -3,6 +3,7 @@ import {
   type Todo,
   createTodo,
   removeTodoById,
+  restoreTodo,
   toggleTodoById,
   updateTodoText,
   filterTodos,
@@ -13,8 +14,11 @@ import {
 // get the todos saved in the browser, or start with an empty list
 let todos: Todo[] = JSON.parse(localStorage.getItem('todos') || '[]');
 
-// used by the filter and the edit
+// used by the filter, the undo and the edit
 let currentFilter = 'all';
+let removedTodo: Todo | null = null;
+let removedIndex = 0;
+let undoTimer = 0;
 let editingId = 0; // id of the todo that is being edited, 0 when there is none
 
 const todoInput = document.getElementById('todo-input') as HTMLInputElement;
@@ -24,6 +28,8 @@ const errorMessage = document.getElementById('error-message') as HTMLParagraphEl
 const progressBar = document.getElementById('progress-bar') as HTMLProgressElement;
 const progressText = document.getElementById('progress-text') as HTMLParagraphElement;
 const filterButtons = document.querySelectorAll('.filter-button');
+const undoBar = document.getElementById('undo-bar') as HTMLDivElement;
+const undoButton = document.getElementById('undo-button') as HTMLButtonElement;
 const clearCompletedButton = document.getElementById('clear-completed-button') as HTMLButtonElement;
 const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
 
@@ -143,9 +149,33 @@ const addRemoveButtonListener = (li:HTMLLIElement, id:number):void => {
 }
 
 const removeTodo = (id:number):void => {
+  // remember the todo and its position in case the user clicks undo
+  removedIndex = todos.findIndex(todo => todo.id === id)
+  removedTodo = todos[removedIndex]
+
   todos = removeTodoById(todos, id)
   renderTodos();
+  showUndoBar();
 }
+
+
+// shows the undo bar for 5 seconds
+const showUndoBar = ():void => {
+  undoBar.style.display = 'flex'
+  clearTimeout(undoTimer) // start the 5 seconds again if another todo is removed
+  undoTimer = window.setTimeout(() => {
+    undoBar.style.display = 'none'
+  }, 5000)
+}
+
+undoButton.addEventListener('click', () => {
+  if (removedTodo) {
+    todos = restoreTodo(todos, removedTodo, removedIndex)
+    removedTodo = null
+    undoBar.style.display = 'none'
+    renderTodos();
+  }
+})
 
 
 const addEditButtonListener = (li:HTMLLIElement, id:number):void => {

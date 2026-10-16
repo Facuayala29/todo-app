@@ -21,6 +21,13 @@ export const removeTodoById = (todos:Todo[], id:number):Todo[] => {
   return todos.filter(todo => todo.id !== id)
 }
 
+// puts a removed todo back where it was, for the undo
+export const restoreTodo = (todos:Todo[], todo:Todo, index:number):Todo[] => {
+  const newTodos = [...todos]
+  newTodos.splice(index, 0, todo)
+  return newTodos
+}
+
 export const toggleTodoById = (todos:Todo[], id:number):Todo[] => {
   return todos.map(todo => {
     if (todo.id === id) {
