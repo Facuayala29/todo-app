@@ -3,6 +3,7 @@ import {
   type Todo,
   createTodo,
   removeTodoById,
+  restoreTodo,
   toggleTodoById,
   updateTodoText,
   filterTodos,
@@ -40,6 +41,16 @@ describe('removeTodoById', () => {
     removeTodoById(todos, 2)
 
     expect(todos).toHaveLength(3)
+  })
+})
+
+
+describe('restoreTodo', () => {
+  it('puts the removed todo back in the same position', () => {
+    const withoutTodo = removeTodoById(todos, 2)
+    const result = restoreTodo(withoutTodo, todos[1], 1)
+
+    expect(result).toEqual(todos)
   })
 })
 
