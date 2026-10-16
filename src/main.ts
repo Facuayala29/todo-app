@@ -6,6 +6,7 @@ import {
   restoreTodo,
   toggleTodoById,
   updateTodoText,
+  moveTodoById,
   filterTodos,
   clearCompleted,
   getProgressText
@@ -14,11 +15,12 @@ import {
 // get the todos saved in the browser, or start with an empty list
 let todos: Todo[] = JSON.parse(localStorage.getItem('todos') || '[]');
 
-// used by the filter, the undo and the edit
+// used by the filter, the undo, the drag and drop and the edit
 let currentFilter = 'all';
 let removedTodo: Todo | null = null;
 let removedIndex = 0;
 let undoTimer = 0;
+let draggedId = 0;
 let editingId = 0; // id of the todo that is being edited, 0 when there is none
 
 const todoInput = document.getElementById('todo-input') as HTMLInputElement;
@@ -67,6 +69,7 @@ const renderTodos = ():void => {
       addToggleListener(li, todo.id);
       addRemoveButtonListener(li, todo.id);
       addEditButtonListener(li, todo.id);
+      addDragListeners(li, todo.id);
     }
     todoList.appendChild(li);
   })
@@ -216,6 +219,23 @@ const saveEdit = (id:number, text:string):void => {
 
 const cancelEdit = ():void => {
   editingId = 0
+  renderTodos();
+}
+
+
+const addDragListeners = (li:HTMLLIElement, id:number):void => {
+  li.draggable = true
+  li.addEventListener('dragstart', () => {
+    draggedId = id
+  })
+  li.addEventListener('dragover', (event: DragEvent) => {
+    event.preventDefault(); // without this the browser does not allow the drop
+  })
+  li.addEventListener('drop', () => moveTodo(draggedId, id))
+}
+
+const moveTodo = (fromId:number, toId:number):void => {
+  todos = moveTodoById(todos, fromId, toId)
   renderTodos();
 }
 

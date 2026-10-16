@@ -6,6 +6,7 @@ import {
   restoreTodo,
   toggleTodoById,
   updateTodoText,
+  moveTodoById,
   filterTodos,
   clearCompleted,
   getProgressText
@@ -81,6 +82,15 @@ describe('updateTodoText', () => {
     const result = updateTodoText(todos, 1, '   ')
 
     expect(result[0].text).toBe('Buy milk')
+  })
+})
+
+
+describe('moveTodoById', () => {
+  it('moves the dragged todo to where it was dropped', () => {
+    const result = moveTodoById(todos, 3, 1)
+
+    expect(result.map(todo => todo.id)).toEqual([3, 1, 2])
   })
 })
 

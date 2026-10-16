@@ -58,6 +58,16 @@ export const updateTodoText = (todos:Todo[], id:number, text:string):Todo[] => {
   })
 }
 
+// moves the dragged todo to where it was dropped
+export const moveTodoById = (todos:Todo[], fromId:number, toId:number):Todo[] => {
+  const newTodos = [...todos]
+  const fromIndex = newTodos.findIndex(todo => todo.id === fromId)
+  const toIndex = newTodos.findIndex(todo => todo.id === toId)
+  const movedTodo = newTodos.splice(fromIndex, 1)[0]
+  newTodos.splice(toIndex, 0, movedTodo)
+  return newTodos
+}
+
 // filter can be 'all', 'active' or 'completed'
 export const filterTodos = (todos:Todo[], filter:string):Todo[] => {
   if (filter === 'active') {
