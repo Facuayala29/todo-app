@@ -225,6 +225,27 @@ button:active {
   background: var(--blue) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Cpath d='M6 11.5l3.5 3.5L16 8' fill='none' stroke='%23fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 100% no-repeat;
 }
 
+#undo-bar {
+  display: none;
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  align-items: center;
+  gap: 16px;
+  padding: 10px 10px 10px 20px;
+  font-size: 15px;
+  color: #fff;
+  background: rgba(28, 28, 30, 0.85);
+  backdrop-filter: blur(20px);
+  border-radius: 999px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+}
+#undo-button {
+  padding: 6px 14px;
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
 
 .footer {
   display: flex;
