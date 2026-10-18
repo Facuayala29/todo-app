@@ -20,3 +20,11 @@ Live: https://facuayala29.github.io/todo-app/
 npm test
 npm run test:e2e
 
+
+## How it was made
+
+- every feature has its own issue and a pull request into develop, reviewed by Lucas
+- gitflow with main, develop, feature and release branches
+- conventional commits
+- at least 2 testcafe tests per feature, plus unit tests with vitest
+- github actions runs the build and tests on every PR and deploys main to github pages
