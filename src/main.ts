@@ -1,60 +1,250 @@
 import './style.css'
-import heroImg from './assets/hero.png'
-import typescriptLogo from './assets/typescript.svg'
-import viteLogo from './assets/vite.svg'
-import { setupCounter } from './counter.ts'
+import {
+  type Todo,
+  createTodo,
+  removeTodoById,
+  restoreTodo,
+  toggleTodoById,
+  updateTodoText,
+  moveTodoById,
+  filterTodos,
+  clearCompleted,
+  getProgressText
+} from './todos'
 
-document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-<section id="center">
-  <div class="hero">
-    <img src="${heroImg}" class="base" width="170" height="179">
-    <img src="${typescriptLogo}" class="framework" alt="TypeScript logo"/>
-    <img src="${viteLogo}" class="vite" alt="Vite logo" />
-  </div>
-  <div>
-    <h1>Get started</h1>
-    <p>Edit <code>src/main.ts</code> and save to test <code>HMR</code></p>
-  </div>
-  <button id="counter" type="button" class="counter"></button>
-</section>
+// get the todos saved in the browser, or start with an empty list
+let todos: Todo[] = JSON.parse(localStorage.getItem('todos') || '[]');
 
-<div class="ticks"></div>
+// used by the filter, the undo, the drag and drop and the edit
+let currentFilter = 'all';
+let removedTodo: Todo | null = null;
+let removedIndex = 0;
+let undoTimer = 0;
+let draggedId = 0;
+let editingId = 0; // id of the todo that is being edited, 0 when there is none
 
-<section id="next-steps">
-  <div id="docs">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#documentation-icon"></use></svg>
-    <h2>Documentation</h2>
-    <p>Your questions, answered</p>
-    <ul>
-      <li>
-        <a href="https://vite.dev/" target="_blank">
-          <img class="logo" src="${viteLogo}" alt="" />
-          Explore Vite
-        </a>
-      </li>
-      <li>
-        <a href="https://www.typescriptlang.org" target="_blank">
-          <img class="button-icon" src="${typescriptLogo}" alt="">
-          Learn more
-        </a>
-      </li>
-    </ul>
-  </div>
-  <div id="social">
-    <svg class="icon" role="presentation" aria-hidden="true"><use href="/icons.svg#social-icon"></use></svg>
-    <h2>Connect with us</h2>
-    <p>Join the Vite community</p>
-    <ul>
-      <li><a href="https://github.com/vitejs/vite" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#github-icon"></use></svg>GitHub</a></li>
-      <li><a href="https://chat.vite.dev/" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#discord-icon"></use></svg>Discord</a></li>
-      <li><a href="https://x.com/vite_js" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#x-icon"></use></svg>X.com</a></li>
-      <li><a href="https://bsky.app/profile/vite.dev" target="_blank"><svg class="button-icon" role="presentation" aria-hidden="true"><use href="/icons.svg#bluesky-icon"></use></svg>Bluesky</a></li>
-    </ul>
-  </div>
-</section>
+const todoInput = document.getElementById('todo-input') as HTMLInputElement;
+const todoForm = document.querySelector('.todo-form') as HTMLFormElement;
+const todoList = document.getElementById('todo-list') as HTMLUListElement;
+const errorMessage = document.getElementById('error-message') as HTMLParagraphElement;
+const progressBar = document.getElementById('progress-bar') as HTMLProgressElement;
+const progressText = document.getElementById('progress-text') as HTMLParagraphElement;
+const filterButtons = document.querySelectorAll('.filter-button');
+const undoBar = document.getElementById('undo-bar') as HTMLDivElement;
+const undoButton = document.getElementById('undo-button') as HTMLButtonElement;
+const clearCompletedButton = document.getElementById('clear-completed-button') as HTMLButtonElement;
+const clearButton = document.getElementById('clear-button') as HTMLButtonElement;
+const colorPicker = document.getElementById('color-picker') as HTMLInputElement;
 
-<div class="ticks"></div>
-<section id="spacer"></section>
-`
+const addTodo = (text:string):void => {
+  todos.push(createTodo(text))
+  renderTodos();
+}
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!)
+const renderTodos = ():void => {
+  // clear the list so the todos are not repeated
+  todoList.innerHTML = '';
+
+  filterTodos(todos, currentFilter).forEach(todo => {
+    const li = document.createElement('li');
+    li.className = 'todo-item'
+    if (todo.completed) {
+      li.classList.add('completed')
+    }
+
+    if (todo.id === editingId) {
+      // this todo is being edited, show an input instead of the text
+      li.innerHTML = `
+        <input type="text" class="edit-input">
+        <button class="save-button">Save</button>
+        <button class="cancel-button">Cancel</button>
+      `
+      addEditFormListeners(li, todo);
+    } else {
+      li.innerHTML = `
+        <input type="checkbox" class="toggle-checkbox" ${todo.completed ? 'checked' : ''}>
+        <span>${todo.text}</span>
+        <button class="remove-button">Remove</button>
+        <button class="edit-button">Edit</button>
+      `
+      addToggleListener(li, todo.id);
+      addRemoveButtonListener(li, todo.id);
+      addEditButtonListener(li, todo.id);
+      addDragListeners(li, todo.id);
+    }
+    todoList.appendChild(li);
+  })
+
+  // put the cursor in the edit input so the user can type right away
+  const editInput = todoList.querySelector('.edit-input') as HTMLInputElement | null;
+  editInput?.focus()
+
+  updateProgress();
+  saveTodos();
+}
+
+todoForm.addEventListener('submit', (event: Event) => {
+  event.preventDefault();
+  const text = todoInput.value.trim();
+
+  if (text !== '') {
+    todoInput.classList.remove('input-error')
+    errorMessage.style.display = 'none'
+    addTodo(text);
+    todoInput.value = ''; // clears the input field after adding the todo
+  } else {
+    // empty input, show the error
+    todoInput.classList.add('input-error')
+    errorMessage.style.display = 'block'
+  }
+})
+
+
+// saves the todos so they stay after reloading the page
+const saveTodos = ():void => {
+  localStorage.setItem('todos', JSON.stringify(todos))
+}
+
+clearButton.addEventListener('click', () => {
+  todos = []
+  renderTodos();
+})
+
+clearCompletedButton.addEventListener('click', () => {
+  todos = clearCompleted(todos)
+  renderTodos();
+})
+
+
+// Filter - shows all, active or completed todos
+filterButtons.forEach(filterButton => {
+  filterButton.addEventListener('click', () => {
+    currentFilter = filterButton.getAttribute('data-filter') || 'all'
+
+    // only the clicked button stays marked as active
+    filterButtons.forEach(button => button.classList.remove('active'))
+    filterButton.classList.add('active')
+    renderTodos();
+  })
+})
+
+
+const addToggleListener = (li:HTMLLIElement, id:number):void => {
+  const checkbox = li.querySelector('.toggle-checkbox');
+  checkbox?.addEventListener('change', () => toggleTodo(id))
+}
+
+const toggleTodo = (id:number):void => {
+  todos = toggleTodoById(todos, id)
+  renderTodos();
+}
+
+
+const updateProgress = ():void => {
+  progressBar.max = todos.length || 1 // max can not be 0
+  progressBar.value = todos.filter(todo => todo.completed).length
+  progressText.textContent = getProgressText(todos)
+}
+
+
+const addRemoveButtonListener = (li:HTMLLIElement, id:number):void => {
+  const removeButton = li.querySelector('.remove-button');
+  removeButton?.addEventListener('click', () => removeTodo(id))
+}
+
+const removeTodo = (id:number):void => {
+  // remember the todo and its position in case the user clicks undo
+  removedIndex = todos.findIndex(todo => todo.id === id)
+  removedTodo = todos[removedIndex]
+
+  todos = removeTodoById(todos, id)
+  renderTodos();
+  showUndoBar();
+}
+
+
+// shows the undo bar for 5 seconds
+const showUndoBar = ():void => {
+  undoBar.style.display = 'flex'
+  clearTimeout(undoTimer) // start the 5 seconds again if another todo is removed
+  undoTimer = window.setTimeout(() => {
+    undoBar.style.display = 'none'
+  }, 5000)
+}
+
+undoButton.addEventListener('click', () => {
+  if (removedTodo) {
+    todos = restoreTodo(todos, removedTodo, removedIndex)
+    removedTodo = null
+    undoBar.style.display = 'none'
+    renderTodos();
+  }
+})
+
+
+const addEditButtonListener = (li:HTMLLIElement, id:number):void => {
+  const editButton = li.querySelector('.edit-button');
+  editButton?.addEventListener('click', () => editTodo(id))
+}
+
+const editTodo = (id:number):void => {
+  editingId = id
+  renderTodos();
+}
+
+const addEditFormListeners = (li:HTMLLIElement, todo:Todo):void => {
+  const editInput = li.querySelector('.edit-input') as HTMLInputElement;
+  const saveButton = li.querySelector('.save-button');
+  const cancelButton = li.querySelector('.cancel-button');
+  editInput.value = todo.text
+
+  saveButton?.addEventListener('click', () => saveEdit(todo.id, editInput.value))
+  cancelButton?.addEventListener('click', () => cancelEdit())
+
+  // enter saves and escape cancels, same as the buttons
+  editInput.addEventListener('keydown', (event: KeyboardEvent) => {
+    if (event.key === 'Enter') {
+      saveEdit(todo.id, editInput.value);
+    }
+    if (event.key === 'Escape') {
+      cancelEdit();
+    }
+  })
+}
+
+const saveEdit = (id:number, text:string):void => {
+  todos = updateTodoText(todos, id, text)
+  editingId = 0
+  renderTodos();
+}
+
+const cancelEdit = ():void => {
+  editingId = 0
+  renderTodos();
+}
+
+
+const addDragListeners = (li:HTMLLIElement, id:number):void => {
+  li.draggable = true
+  li.addEventListener('dragstart', () => {
+    draggedId = id
+  })
+  li.addEventListener('dragover', (event: DragEvent) => {
+    event.preventDefault(); // without this the browser does not allow the drop
+  })
+  li.addEventListener('drop', () => moveTodo(draggedId, id))
+}
+
+const moveTodo = (fromId:number, toId:number):void => {
+  todos = moveTodoById(todos, fromId, toId)
+  renderTodos();
+}
+
+
+// Color picker - changes the background of the page
+colorPicker.addEventListener('input', () => {
+  document.body.style.backgroundColor = colorPicker.value
+})
+
+
+renderTodos();
